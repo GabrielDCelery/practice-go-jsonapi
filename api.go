@@ -59,7 +59,8 @@ func (server Server) handleAccount(response http.ResponseWriter, request *http.R
 }
 
 func (server Server) handleGetAccount(response http.ResponseWriter, request *http.Request) error {
-	return nil
+	mockAccount := NewAccount("Gabor", "Zeller")
+	return sendJSON(response, http.StatusOK, mockAccount)
 }
 
 func (server Server) handleCreateAccount(response http.ResponseWriter, request *http.Request) error {
