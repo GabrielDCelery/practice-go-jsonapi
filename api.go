@@ -10,8 +10,8 @@ import (
 )
 
 func sendJSON(response http.ResponseWriter, status int, data any) error {
-	response.WriteHeader(status)
 	response.Header().Set("Content-Type", "application/json")
+	response.WriteHeader(status)
 	return json.NewEncoder(response).Encode(data)
 }
 
