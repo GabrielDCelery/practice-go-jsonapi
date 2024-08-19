@@ -1,8 +1,7 @@
 package main
 
 import (
-	"database/sql"
-	_ "github.com/lib/pq"
+	"github.com/jackc/pgx"
 )
 
 type Store interface {
@@ -12,20 +11,23 @@ type Store interface {
 }
 
 type PostgresStore struct {
-	db *sql.DB
+	conn *pgx.Conn
 }
 
 func NewPostgresStore() (error, *PostgresStore) {
-	connStr := "user=postgres dbname=postgres password=gobank sslmode=disable"
-	db, err := sql.Open("postgres", connStr)
+	connConfig := pgx.ConnConfig{
+		Host:     "localhost",
+		Database: "postgres",
+		Port:     5432,
+		User:     "postgres",
+		Password: "gobank",
+	}
+	conn, err := pgx.Connect(connConfig)
 	if err != nil {
 		return err, nil
 	}
-	if err := db.Ping(); err != nil {
-		return err, nil
-	}
 	return nil, &PostgresStore{
-		db: db,
+		conn: conn,
 	}
 }
 
