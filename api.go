@@ -31,11 +31,13 @@ func wrapHttpHandlerFunc(handler HttpHandlerFunction) http.HandlerFunc {
 
 type Server struct {
 	listenAddress string
+	store         Store
 }
 
-func NewServer(listenAddress string) *Server {
+func NewServer(listenAddress string, store Store) *Server {
 	return &Server{
 		listenAddress: listenAddress,
+		store:         store,
 	}
 }
 
