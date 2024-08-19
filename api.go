@@ -78,7 +78,14 @@ func (server Server) handleCreateAccount(response http.ResponseWriter, request *
 }
 
 func (server Server) handleDeleteAccount(response http.ResponseWriter, request *http.Request) error {
-	return nil
+	deleteAccountRequest := &DeleteAccountRequest{}
+	if err := json.NewDecoder(request.Body).Decode(deleteAccountRequest); err != nil {
+		return err
+	}
+	if err := server.store.DeleteAccountByID(deleteAccountRequest.ID); err != nil {
+		return err
+	}
+	return sendJSON(response, http.StatusOK, deleteAccountRequest)
 }
 
 func (server Server) handleTransfer(response http.ResponseWriter, request *http.Request) error {

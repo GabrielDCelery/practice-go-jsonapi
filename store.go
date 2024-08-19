@@ -9,7 +9,7 @@ import (
 
 type Store interface {
 	CreateAccount(*Account) error
-	DeleteAccount(id string) error
+	DeleteAccountByID(id string) error
 	GetAccountByID(id string) (error, *Account)
 }
 
@@ -45,7 +45,6 @@ func (store *PostgresStore) Init() error {
 }
 
 func (store *PostgresStore) createAccountTable() error {
-	// defer store.conn.Close(context.Background())
 	sql := `
 		CREATE TABLE IF NOT EXISTS accounts(
 			id VARCHAR(255),
@@ -60,7 +59,6 @@ func (store *PostgresStore) createAccountTable() error {
 }
 
 func (store *PostgresStore) CreateAccount(account *Account) error {
-	// defer store.conn.Close(context.Background())
 	sql := `
 		INSERT INTO accounts VALUES(
 			$1,
@@ -72,8 +70,12 @@ func (store *PostgresStore) CreateAccount(account *Account) error {
 	_, err := store.conn.Query(context.Background(), sql, account.ID, account.FirstName, account.LastName, account.Balance)
 	return err
 }
-func (store *PostgresStore) DeleteAccount(id string) error {
-	return nil
+func (store *PostgresStore) DeleteAccountByID(id string) error {
+	sql := `
+		DELETE FROM accounts WHERE id = $1
+	`
+	_, err := store.conn.Query(context.Background(), sql, id)
+	return err
 }
 func (store *PostgresStore) GetAccountByID(id string) (error, *Account) {
 	return nil, &Account{}

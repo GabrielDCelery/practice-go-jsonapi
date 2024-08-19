@@ -11,6 +11,10 @@ type CreateAccountRequest struct {
 	LastName  string
 }
 
+type DeleteAccountRequest struct {
+	ID string
+}
+
 type Account struct {
 	ID        string    `json:"id"`
 	FirstName string    `json:"firstName"`
