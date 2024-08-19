@@ -66,7 +66,15 @@ func (server Server) handleGetAccount(response http.ResponseWriter, request *htt
 }
 
 func (server Server) handleCreateAccount(response http.ResponseWriter, request *http.Request) error {
-	return nil
+	createAccountRequest := &CreateAccountRequest{}
+	if err := json.NewDecoder(request.Body).Decode(createAccountRequest); err != nil {
+		return err
+	}
+	account := NewAccount(createAccountRequest.FirstName, createAccountRequest.LastName)
+	if err := server.store.CreateAccount(account); err != nil {
+		return err
+	}
+	return sendJSON(response, http.StatusOK, account)
 }
 
 func (server Server) handleDeleteAccount(response http.ResponseWriter, request *http.Request) error {
