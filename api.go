@@ -44,6 +44,7 @@ func NewServer(listenAddress string, store Store) *Server {
 func (server *Server) Run() {
 	router := mux.NewRouter()
 	router.HandleFunc("/account", wrapHttpHandlerFunc(server.handleAccount))
+	router.HandleFunc("/account/{id}", wrapHttpHandlerFunc(server.handleGetAccountByID))
 	log.Printf(fmt.Sprintf("Server started listening at address: %s", server.listenAddress))
 	http.ListenAndServe(server.listenAddress, router)
 }
@@ -51,7 +52,7 @@ func (server *Server) Run() {
 func (server Server) handleAccount(response http.ResponseWriter, request *http.Request) error {
 	switch request.Method {
 	case "GET":
-		return server.handleGetAccount(response, request)
+		return server.handleGetAccounts(response, request)
 	case "POST":
 		return server.handleCreateAccount(response, request)
 	case "DELETE":
@@ -60,7 +61,17 @@ func (server Server) handleAccount(response http.ResponseWriter, request *http.R
 	return fmt.Errorf("Method not allowed %s", request.Method)
 }
 
-func (server Server) handleGetAccount(response http.ResponseWriter, request *http.Request) error {
+func (server Server) handleGetAccountByID(response http.ResponseWriter, request *http.Request) error {
+	vars := mux.Vars(request)
+	accountID := vars["id"]
+	err, account := server.store.GetAccountByID(accountID)
+	if err != nil {
+		return err
+	}
+	return sendJSON(response, http.StatusOK, account)
+}
+
+func (server Server) handleGetAccounts(response http.ResponseWriter, request *http.Request) error {
 	mockAccount := NewAccount("Gabor", "Zeller")
 	return sendJSON(response, http.StatusOK, mockAccount)
 }

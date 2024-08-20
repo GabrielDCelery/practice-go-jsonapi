@@ -11,6 +11,7 @@ type Store interface {
 	CreateAccount(*Account) error
 	DeleteAccountByID(id string) error
 	GetAccountByID(id string) (error, *Account)
+	GetAccounts() (error, []*Account)
 }
 
 type PostgresStore struct {
@@ -70,6 +71,7 @@ func (store *PostgresStore) CreateAccount(account *Account) error {
 	_, err := store.conn.Query(context.Background(), sql, account.ID, account.FirstName, account.LastName, account.Balance)
 	return err
 }
+
 func (store *PostgresStore) DeleteAccountByID(id string) error {
 	sql := `
 		DELETE FROM accounts WHERE id = $1
@@ -77,6 +79,25 @@ func (store *PostgresStore) DeleteAccountByID(id string) error {
 	_, err := store.conn.Query(context.Background(), sql, id)
 	return err
 }
+
 func (store *PostgresStore) GetAccountByID(id string) (error, *Account) {
-	return nil, &Account{}
+	sql := `
+		SELECT id, first_name, last_name, balance, created_at FROM accounts WHERE id = $1;
+	`
+	account := &Account{}
+	err := store.conn.QueryRow(context.Background(), sql, id).Scan(
+		&account.ID,
+		&account.FirstName,
+		&account.LastName,
+		&account.Balance,
+		&account.CreatedAt,
+	)
+	if err != nil {
+		return err, &Account{}
+	}
+	return nil, account
+}
+
+func (store *PostgresStore) GetAccounts() (error, []*Account) {
+	return nil, []*Account{}
 }
