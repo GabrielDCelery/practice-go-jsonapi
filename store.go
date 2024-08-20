@@ -99,5 +99,27 @@ func (store *PostgresStore) GetAccountByID(id string) (error, *Account) {
 }
 
 func (store *PostgresStore) GetAccounts() (error, []*Account) {
-	return nil, []*Account{}
+	sql := `
+		SELECT id, first_name, last_name, balance, created_at FROM accounts;
+	`
+	rows, err := store.conn.Query(context.Background(), sql)
+	if err != nil {
+		return err, []*Account{}
+	}
+	accounts := []*Account{}
+	for rows.Next() {
+		account := &Account{}
+		err := rows.Scan(
+			&account.ID,
+			&account.FirstName,
+			&account.LastName,
+			&account.Balance,
+			&account.CreatedAt,
+		)
+		if err != nil {
+			return err, []*Account{}
+		}
+		accounts = append(accounts, account)
+	}
+	return nil, accounts
 }

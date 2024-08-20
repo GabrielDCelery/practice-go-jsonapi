@@ -71,9 +71,12 @@ func (server Server) handleGetAccountByID(response http.ResponseWriter, request 
 	return sendJSON(response, http.StatusOK, account)
 }
 
-func (server Server) handleGetAccounts(response http.ResponseWriter, request *http.Request) error {
-	mockAccount := NewAccount("Gabor", "Zeller")
-	return sendJSON(response, http.StatusOK, mockAccount)
+func (server Server) handleGetAccounts(response http.ResponseWriter, _ *http.Request) error {
+	err, accounts := server.store.GetAccounts()
+	if err != nil {
+		return err
+	}
+	return sendJSON(response, http.StatusOK, accounts)
 }
 
 func (server Server) handleCreateAccount(response http.ResponseWriter, request *http.Request) error {
