@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"regexp"
 
 	"github.com/gorilla/mux"
 )
@@ -64,6 +65,10 @@ func (server Server) handleAccount(response http.ResponseWriter, request *http.R
 func (server Server) handleGetAccountByID(response http.ResponseWriter, request *http.Request) error {
 	vars := mux.Vars(request)
 	accountID := vars["id"]
+	uuidRegex := regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$`)
+	if !uuidRegex.MatchString(accountID) {
+		return fmt.Errorf("Invalid account ID: %s", accountID)
+	}
 	err, account := server.store.GetAccountByID(accountID)
 	if err != nil {
 		return err
