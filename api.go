@@ -19,7 +19,7 @@ func sendJSON(response http.ResponseWriter, status int, data any) error {
 type HttpHandlerFunction func(response http.ResponseWriter, request *http.Request) error
 
 type HttpError struct {
-	Error string
+	Error string `json:"error"`
 }
 
 func wrapHttpHandlerFunc(handler HttpHandlerFunction) http.HandlerFunc {
