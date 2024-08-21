@@ -44,25 +44,15 @@ func NewServer(listenAddress string, store Store) *Server {
 
 func (server *Server) Run() {
 	router := mux.NewRouter()
-	router.HandleFunc("/account", wrapHttpHandlerFunc(server.handleAccount))
-	router.HandleFunc("/account/{id}", wrapHttpHandlerFunc(server.handleGetAccountByID))
+	router.HandleFunc("/account", wrapHttpHandlerFunc(server.handleGetAccounts)).Methods("GET")
+	router.HandleFunc("/account", wrapHttpHandlerFunc(server.handleCreateAccount)).Methods("POST")
+	router.HandleFunc("/account/{id}", wrapHttpHandlerFunc(server.handleGetAccount)).Methods("GET")
+	router.HandleFunc("/account/{id}", wrapHttpHandlerFunc(server.handleDeleteAccount)).Methods("DELETE")
 	log.Printf(fmt.Sprintf("Server started listening at address: %s", server.listenAddress))
 	http.ListenAndServe(server.listenAddress, router)
 }
 
-func (server Server) handleAccount(response http.ResponseWriter, request *http.Request) error {
-	switch request.Method {
-	case "GET":
-		return server.handleGetAccounts(response, request)
-	case "POST":
-		return server.handleCreateAccount(response, request)
-	case "DELETE":
-		return server.handleDeleteAccount(response, request)
-	}
-	return fmt.Errorf("Method not allowed %s", request.Method)
-}
-
-func (server Server) handleGetAccountByID(response http.ResponseWriter, request *http.Request) error {
+func (server Server) handleGetAccount(response http.ResponseWriter, request *http.Request) error {
 	vars := mux.Vars(request)
 	accountID := vars["id"]
 	uuidRegex := regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$`)
@@ -97,14 +87,13 @@ func (server Server) handleCreateAccount(response http.ResponseWriter, request *
 }
 
 func (server Server) handleDeleteAccount(response http.ResponseWriter, request *http.Request) error {
-	deleteAccountRequest := &DeleteAccountRequest{}
-	if err := json.NewDecoder(request.Body).Decode(deleteAccountRequest); err != nil {
-		return err
+	vars := mux.Vars(request)
+	accountID := vars["id"]
+	uuidRegex := regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$`)
+	if !uuidRegex.MatchString(accountID) {
+		return fmt.Errorf("Invalid account ID: %s", accountID)
 	}
-	if err := server.store.DeleteAccountByID(deleteAccountRequest.ID); err != nil {
-		return err
-	}
-	return sendJSON(response, http.StatusOK, deleteAccountRequest)
+	return server.store.DeleteAccountByID(accountID)
 }
 
 func (server Server) handleTransfer(response http.ResponseWriter, request *http.Request) error {
